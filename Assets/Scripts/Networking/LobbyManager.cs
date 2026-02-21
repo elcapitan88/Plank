@@ -58,6 +58,11 @@ public class LobbyManager : MonoBehaviourPunCallbacks
         leaveRoomButton.onClick.AddListener(LeaveRoom);
 
         statusText.text = "Enter your name and connect.";
+
+        // When the host loads a new scene, all clients in the room
+        // automatically load the same scene. Without this, clicking
+        // "Start Game" would only load the Game scene for the host.
+        PhotonNetwork.AutomaticallySyncScene = true;
     }
 
     // --- CONNECTION ---

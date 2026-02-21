@@ -1,41 +1,54 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using Photon.Pun;
 
-// This script handles basic player movement using Unity's new Input System.
-// The new Input System uses "actions" instead of polling keys directly.
-// Think of it like event-driven input — you define actions (Move, Jump, etc.)
-// and Unity maps them to keys/controllers for you.
-public class PlayerController : MonoBehaviour
+// Now inherits from MonoBehaviourPun instead of MonoBehaviour.
+// MonoBehaviourPun gives us access to this.photonView — a reference
+// to the PhotonView component on this GameObject. We use it to check
+// if this player belongs to us (the local machine) or someone else.
+public class PlayerController : MonoBehaviourPun
 {
-    // [SerializeField] exposes this variable in the Unity Inspector
-    // so you can tweak the speed without changing code.
     [SerializeField] private float moveSpeed = 5f;
 
-    // This stores the current movement direction from player input.
-    // It gets updated whenever the player presses/releases WASD.
     private Vector2 moveInput;
 
-    // Called by the Player Input component via "Send Messages" whenever
-    // the "Move" action fires. The method name must be "OnMove" to match
-    // the action name "Move". Unity sends an InputValue object containing
-    // the input data — similar to how Flask/FastAPI passes request data
-    // to your route handler.
+    // Reference to the PlayerInput component so we can disable it
+    // on remote players (we don't want to process input for other people).
+    private PlayerInput playerInput;
+
+    void Awake()
+    {
+        playerInput = GetComponent<PlayerInput>();
+    }
+
+    void Start()
+    {
+        // photonView.IsMine is TRUE only on the machine that owns this player.
+        // On other machines, this player is a "remote" copy that just mirrors position.
+        // We disable the PlayerInput component on remote copies so they don't
+        // respond to our keyboard — only the local player should move from input.
+        if (!photonView.IsMine)
+        {
+            if (playerInput != null)
+                playerInput.enabled = false;
+        }
+    }
+
     public void OnMove(InputValue value)
     {
-        // Get<Vector2>() reads the direction from the input:
-        //   W = (0,1), S = (0,-1), A = (-1,0), D = (1,0)
-        // When keys are released, it sends (0,0) automatically.
+        // Only process input if this is our local player.
+        if (!photonView.IsMine) return;
+
         moveInput = value.Get<Vector2>();
     }
 
-    // Update() is called once per frame by Unity (like a game loop).
     void Update()
     {
-        // Normalize so diagonal movement isn't faster than cardinal.
-        Vector2 direction = moveInput.normalized;
+        // Only move if this is our local player.
+        // Remote players get their position synced via PhotonTransformView.
+        if (!photonView.IsMine) return;
 
-        // Move the GameObject by shifting its position.
-        // Time.deltaTime = time since last frame — makes movement frame-rate independent.
+        Vector2 direction = moveInput.normalized;
         transform.position += (Vector3)(direction * moveSpeed * Time.deltaTime);
     }
 }
