@@ -86,7 +86,7 @@ Help me:
 
 ---
 
-### 🔲 PHASE 1: Multiplayer Foundation (Weeks 1-3)
+### ✅ PHASE 1: Multiplayer Foundation (Weeks 1-3)
 
 #### Step 1.1 — Lobby System
 Build:
@@ -373,9 +373,15 @@ Plank/
 
 ## CURRENT STATUS
 
-**Phase: 0 — Setup**
-**Current Step: 0.1 — Unity Installation**
-**Last Completed: N/A — Just starting**
+**Phase: 2 — Core Game Loop**
+**Current Step: 2.3 — Kill System (up next)**
+**Last Completed: Step 2.2 — Role Assignment**
+
+### Completed So Far:
+- **Phase 0** — Unity 6 LTS installed, VS Code configured, Git/GitHub set up, Photon PUN 2 imported, basic WASD movement verified
+- **Phase 1** — Lobby system (connect, create/join rooms, player list), networked player spawning, player identity (colors, name labels, camera follow), basic ship map (4 rooms, corridor, wall collisions), multiplayer tested with 2 instances
+- **Step 2.1** — GameManager state machine (Playing/Discussion/Voting/VoteResult/GameOver) synced via Photon Room Properties, GameHUD with state and timer display
+- **Step 2.2** — Role assignment (Crew/Mutineer) via Photon Player Properties, role displayed on HUD, mutineer count scales with player count
 
 Update this section as we progress so we always know where we are.
 
