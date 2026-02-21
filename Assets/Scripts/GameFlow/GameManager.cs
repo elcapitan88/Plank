@@ -54,6 +54,8 @@ public class GameManager : MonoBehaviourPunCallbacks
         // Only the host starts the game automatically when the scene loads.
         if (PhotonNetwork.IsMasterClient)
         {
+            // Assign roles before starting gameplay.
+            PlayerRole.AssignRoles();
             SetState(GameState.Playing);
         }
     }
