@@ -23,12 +23,18 @@ public class PlayerController : MonoBehaviourPun
 
     void Start()
     {
-        // photonView.IsMine is TRUE only on the machine that owns this player.
-        // On other machines, this player is a "remote" copy that just mirrors position.
-        // We disable the PlayerInput component on remote copies so they don't
-        // respond to our keyboard — only the local player should move from input.
-        if (!photonView.IsMine)
+        if (photonView.IsMine)
         {
+            // This is OUR player — tell the camera to follow us.
+            // FindFirstObjectByType searches the scene for a CameraFollow component.
+            CameraFollow cam = FindFirstObjectByType<CameraFollow>();
+            if (cam != null)
+                cam.SetTarget(transform);
+        }
+        else
+        {
+            // This is someone else's player — disable input so our
+            // keyboard doesn't move their character.
             if (playerInput != null)
                 playerInput.enabled = false;
         }
