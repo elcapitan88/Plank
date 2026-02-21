@@ -2,39 +2,35 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using Photon.Pun;
 
-// Now inherits from MonoBehaviourPun instead of MonoBehaviour.
-// MonoBehaviourPun gives us access to this.photonView — a reference
-// to the PhotonView component on this GameObject. We use it to check
-// if this player belongs to us (the local machine) or someone else.
 public class PlayerController : MonoBehaviourPun
 {
     [SerializeField] private float moveSpeed = 5f;
 
     private Vector2 moveInput;
-
-    // Reference to the PlayerInput component so we can disable it
-    // on remote players (we don't want to process input for other people).
     private PlayerInput playerInput;
+
+    // Rigidbody2D handles physics — collisions, gravity, etc.
+    // By moving through the Rigidbody instead of transform.position,
+    // Unity's physics engine will stop us when we hit a wall collider.
+    // Think of it like the difference between teleporting vs physically walking.
+    private Rigidbody2D rb;
 
     void Awake()
     {
         playerInput = GetComponent<PlayerInput>();
+        rb = GetComponent<Rigidbody2D>();
     }
 
     void Start()
     {
         if (photonView.IsMine)
         {
-            // This is OUR player — tell the camera to follow us.
-            // FindFirstObjectByType searches the scene for a CameraFollow component.
             CameraFollow cam = FindFirstObjectByType<CameraFollow>();
             if (cam != null)
                 cam.SetTarget(transform);
         }
         else
         {
-            // This is someone else's player — disable input so our
-            // keyboard doesn't move their character.
             if (playerInput != null)
                 playerInput.enabled = false;
         }
@@ -42,19 +38,21 @@ public class PlayerController : MonoBehaviourPun
 
     public void OnMove(InputValue value)
     {
-        // Only process input if this is our local player.
         if (!photonView.IsMine) return;
-
         moveInput = value.Get<Vector2>();
     }
 
-    void Update()
+    // FixedUpdate runs at a fixed interval (default 50 times/sec) and is
+    // used for physics. Regular Update runs every frame (variable rate).
+    // Physics should ALWAYS go in FixedUpdate for consistent behavior.
+    void FixedUpdate()
     {
-        // Only move if this is our local player.
-        // Remote players get their position synced via PhotonTransformView.
         if (!photonView.IsMine) return;
 
         Vector2 direction = moveInput.normalized;
-        transform.position += (Vector3)(direction * moveSpeed * Time.deltaTime);
+
+        // MovePosition tells the Rigidbody to move to a new position
+        // while respecting collisions. If a wall is in the way, it stops.
+        rb.MovePosition(rb.position + direction * moveSpeed * Time.fixedDeltaTime);
     }
 }
